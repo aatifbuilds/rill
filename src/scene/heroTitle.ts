@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { TITLE_TRACKING_EM, createReveal, heroTitleLayout, revealValues, stepReveal } from "../scroll/heroTitle";
+import { TITLE_TRACKING_EM, TITLE_WEIGHT, createReveal, heroTitleLayout, revealValues, stepReveal } from "../scroll/heroTitle";
 
 /**
  * The hero headline, drawn inside the WebGL scene so every browser renders it the same way. (As a DOM element with
@@ -54,7 +54,7 @@ export function createHeroTitle(): HeroTitle {
     canvas.height = Math.max(1, Math.ceil(regionHeight * pixelRatio));
     ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
     ctx.clearRect(0, 0, width, regionHeight);
-    ctx.font = `300 ${layout.fontPx}px ${FONT}`;
+    ctx.font = `${TITLE_WEIGHT} ${layout.fontPx}px ${FONT}`;
     ctx.fillStyle = "#ffffff";
     ctx.textBaseline = "alphabetic";
     const track = TITLE_TRACKING_EM * layout.fontPx;
@@ -90,7 +90,7 @@ export function createHeroTitle(): HeroTitle {
 
   // wait for Work Sans before drawing, or the first frames would use a fallback font
   const loaded = (): void => { fontReady = true; draw(); };
-  void document.fonts.load(`300 64px ${FONT}`).then(loaded, loaded);
+  void document.fonts.load(`${TITLE_WEIGHT} 64px ${FONT}`).then(loaded, loaded);
 
   return {
     resize(width, height, compact, pixelRatio) {

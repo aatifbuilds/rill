@@ -19,6 +19,12 @@ export function heroTitleLayout(width: number, height: number, compact: boolean)
 
 /** Letter spacing from the CSS: -0.035em. */
 export const TITLE_TRACKING_EM = -0.035;
+/**
+ * The CSS headline is weight 300. Canvas text comes out heavier than DOM text at the same weight, and by different amounts
+ * per engine (measured as ink in the same crop at weight 262: about 13% more in Chromium, about 8% more in WebKit).
+ * 250 splits the difference without over-correcting for Chrome, since on iOS the DOM and canvas text share one renderer.
+ */
+export const TITLE_WEIGHT = 250;
 
 /* ---------- fade and rise, time-based (the same curve and durations the CSS transitions used) ---------- */
 export const REVEAL = { delay: 0.12, enter: 0.45, exit: 0.22, rise: 18 } as const; // seconds, and pixels
