@@ -52,3 +52,14 @@ Not used: `dataviz` (no real chart; the battery gauge is a graphic), `prototype`
 
 ## Smoothness pass (6 Nov 2026): DONE
 Owner feedback: jerky on fast scroll, buttons fly through all scenes. Studied Apple's UK page scripts; replaced progress smoothing with pose-space springs, a monotone camera path, time-based text chapters, a button glide (owner chose "glide straight there"), adaptive resolution, and removed CSS smooth scroll. 31 unit tests; behaviour measured in the browser. See docs/design.md. NEXT: the owner tries it on a real Mac and trackpad and runs `/review-animations`; then Phase 4 onward.
+
+## Phase: realistic bottle (approved 6 Nov 2026)
+Same design, built in code (no Blender). Steps, one commit each:
+1. `src/scene/profile.ts`: `filletProfile` rounds the corners of an outline (pure, tested).
+2. Finer geometry: body, cap (steel rim, grip band, seal, recessed LED under a diffuser), rubber foot.
+3. Textures: powder-coat grain as a normal map, soft wordmark, grip ridges, ambient-occlusion map.
+4. Materials: powder-coat body, brushed steel (anisotropy), rubber, frosted LED (still driven by `glow`; stencil kept).
+5. `src/scene/studio.ts`: strip-light environment for clean vertical highlights.
+6. Depth from AO and rim light (no floor shadow, the bottle floats).
+7. Performance check on desktop and a throttled phone view; ask the owner before pushing.
+Must not change: height 2.43, `bodyRadiusAt`, pose channels, the stencil mask, phone frame time.
