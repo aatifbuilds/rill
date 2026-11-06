@@ -18,6 +18,8 @@ export interface Pose {
   capLift: number; // how far the cap floats up
   glow: number; // LED brightness, 0..~1.6
   sparkle: number; // 0..1, strength of the speckle glints
+  phoneDy: number; // phone only: how far the camera target moves down, in scene units (the bottle moves up)
+  phoneFit: number; // phone only: how much the camera is pulled back (1 = not at all)
 }
 export interface Key { at: number; pose: Pose }
 
@@ -25,53 +27,58 @@ export const clamp01 = (x: number): number => Math.min(1, Math.max(0, x));
 
 const DEG = Math.PI / 180;
 const pose = (p: Partial<Pose> & Pick<Pose, "camPos" | "camTarget">): Pose => ({
-  fov: 30, rotY: 0, rotZ: 0, offsetY: 0, capLift: 0, glow: 1, sparkle: 0, ...p,
+  fov: 30, rotY: 0, rotZ: 0, offsetY: 0, capLift: 0, glow: 1, sparkle: 0, phoneDy: 0, phoneFit: 1, ...p,
 });
 
-/** Keyframes. Two keys with the same pose make a "hold" (the scene rests while the text is read). */
+/**
+ * Keyframes. Two keys with the same pose make a "hold" (the scene rests while the text is read).
+ * `phoneDy` and `phoneFit` are used only on a phone-width screen, where the caption sits in a panel at the bottom:
+ * `phoneDy` moves the camera target down (so the bottle moves up, clear of the panel) and `phoneFit` pulls the camera back.
+ * They were solved so the whole bottle sits between the nav bar and the panel (see compactFraming and its tests).
+ */
 export const KEYS: readonly Key[] = [
-  // 1 hero: tilted, big, base cropped by the bottom edge, cap clear of the nav
-  { at: 0.0, pose: pose({ camPos: [0, -0.2, 4.6], camTarget: [0, -0.2, 0], rotY: 0.5, rotZ: -8 * DEG, offsetY: -0.55 }) },
-  { at: 0.1, pose: pose({ camPos: [0, -0.2, 4.6], camTarget: [0, -0.2, 0], rotY: 0.7, rotZ: -8 * DEG, offsetY: -0.55 }) },
-  // 2 the whole bottle, upright, then down to the rubber base
-  { at: 0.2, pose: pose({ camPos: [0, 0, 6.8], camTarget: [0, 0, 0], fov: 28, rotY: 1.2 }) },
-  { at: 0.27, pose: pose({ camPos: [0, 0, 6.8], camTarget: [0, 0, 0], fov: 28, rotY: 1.6 }) },
-  { at: 0.34, pose: pose({ camPos: [0.7, -1.0, 2.1], camTarget: [0, -1.05, 0], rotY: 2.0 }) },
-  // 3 macro: the shoulder and its speckled finish
+  // 1 hero: tilted, big, base cropped by the bottom edge, cap clear of the nav (no panel here, so only a little pull-back on phones)
+  { at: 0.0, pose: pose({ camPos: [0, -0.2, 4.6], camTarget: [0, -0.2, 0], rotY: 0.5, rotZ: -8 * DEG, offsetY: -0.55, phoneFit: 1.23 }) },
+  { at: 0.1, pose: pose({ camPos: [0, -0.2, 4.6], camTarget: [0, -0.2, 0], rotY: 0.7, rotZ: -8 * DEG, offsetY: -0.55, phoneFit: 1.23 }) },
+  // 2 the whole bottle, upright, then down to the rubber base (shown with context on a phone, not as a flat block)
+  { at: 0.2, pose: pose({ camPos: [0, 0, 6.8], camTarget: [0, 0, 0], fov: 28, rotY: 1.2, phoneDy: 0.51, phoneFit: 1.32 }) },
+  { at: 0.27, pose: pose({ camPos: [0, 0, 6.8], camTarget: [0, 0, 0], fov: 28, rotY: 1.6, phoneDy: 0.51, phoneFit: 1.32 }) },
+  { at: 0.34, pose: pose({ camPos: [0.7, -1.0, 2.1], camTarget: [0, -1.05, 0], rotY: 2.0, phoneDy: -0.12, phoneFit: 1.71 }) },
+  // 3 macro: the shoulder and its speckled finish (free to crop, on every screen)
   { at: 0.44, pose: pose({ camPos: [0.5, 0.35, 1.9], camTarget: [0, 0.4, 0.3], rotY: 2.6, sparkle: 1 }) },
   { at: 0.54, pose: pose({ camPos: [0.4, 0.4, 1.7], camTarget: [0, 0.45, 0.32], rotY: 3.2, sparkle: 1 }) },
-  // 4 power: the bottle steps left, the gauge takes the right half
-  { at: 0.62, pose: pose({ camPos: [0.3, 0, 6.2], camTarget: [1.35, 0, 0], rotY: 3.6, glow: 1.2 }) },
-  { at: 0.78, pose: pose({ camPos: [0.3, 0, 6.2], camTarget: [1.35, 0, 0], rotY: 4.1, glow: 1.2 }) },
-  // 5 the cap floats off; the bottle stays left so the buy text has the right half
-  { at: 0.88, pose: pose({ camPos: [0.5, 0.1, 7.0], camTarget: [1.4, 0.5, 0], rotY: 4.6, capLift: 0.3, glow: 1.5 }) },
-  { at: 1.0, pose: pose({ camPos: [0.5, 0.1, 7.0], camTarget: [1.4, 0.5, 0], rotY: 5.0, capLift: 0.5, glow: 1.6 }) },
+  // 4 power: the bottle steps left, the gauge takes the right half (on a phone: bottle above, gauge in the panel)
+  { at: 0.62, pose: pose({ camPos: [0.3, 0, 6.2], camTarget: [1.35, 0, 0], rotY: 3.6, glow: 1.2, phoneDy: 0.51, phoneFit: 1.33 }) },
+  { at: 0.78, pose: pose({ camPos: [0.3, 0, 6.2], camTarget: [1.35, 0, 0], rotY: 4.1, glow: 1.2, phoneDy: 0.51, phoneFit: 1.33 }) },
+  // 5 the cap floats off; the bottle stays left so the buy text has the right half (on a phone: cap and bottle both stay in view)
+  { at: 0.88, pose: pose({ camPos: [0.5, 0.1, 7.0], camTarget: [1.4, 0.5, 0], rotY: 4.6, capLift: 0.3, glow: 1.5, phoneDy: 0.85, phoneFit: 1.39 }) },
+  { at: 1.0, pose: pose({ camPos: [0.5, 0.1, 7.0], camTarget: [1.4, 0.5, 0], rotY: 5.0, capLift: 0.5, glow: 1.6, phoneDy: 0.85, phoneFit: 1.39 }) },
 ];
 
 /* ---------- pose <-> flat array (so every channel can be treated alike, with no allocation per frame) ---------- */
-export const CHANNELS = 14;
+export const CHANNELS = 15;
 export type PoseArray = number[];
 
 export function poseToArray(p: Pose, out: PoseArray = new Array<number>(CHANNELS).fill(0)): PoseArray {
   out[0] = p.camPos[0]; out[1] = p.camPos[1]; out[2] = p.camPos[2];
   out[3] = p.camTarget[0]; out[4] = p.camTarget[1]; out[5] = p.camTarget[2];
   out[6] = p.fov; out[7] = p.rotY; out[8] = p.rotZ; out[9] = p.offsetY; out[10] = p.capLift; out[11] = p.glow; out[12] = p.sparkle;
-  out[13] = 0; // spare channel
+  out[13] = p.phoneDy; out[14] = p.phoneFit;
   return out;
 }
-export interface MutablePose { camPos: [number, number, number]; camTarget: [number, number, number]; fov: number; rotY: number; rotZ: number; offsetY: number; capLift: number; glow: number; sparkle: number }
-export const createMutablePose = (): MutablePose => ({ camPos: [0, 0, 0], camTarget: [0, 0, 0], fov: 30, rotY: 0, rotZ: 0, offsetY: 0, capLift: 0, glow: 1, sparkle: 0 });
+export interface MutablePose { camPos: [number, number, number]; camTarget: [number, number, number]; fov: number; rotY: number; rotZ: number; offsetY: number; capLift: number; glow: number; sparkle: number; phoneDy: number; phoneFit: number }
+export const createMutablePose = (): MutablePose => ({ camPos: [0, 0, 0], camTarget: [0, 0, 0], fov: 30, rotY: 0, rotZ: 0, offsetY: 0, capLift: 0, glow: 1, sparkle: 0, phoneDy: 0, phoneFit: 1 });
 /** Fill an existing pose from an array, with no allocation (used every frame). */
 export function fillPose(a: readonly number[], out: MutablePose): MutablePose {
   out.camPos[0] = a[0]; out.camPos[1] = a[1]; out.camPos[2] = a[2];
   out.camTarget[0] = a[3]; out.camTarget[1] = a[4]; out.camTarget[2] = a[5];
-  out.fov = a[6]; out.rotY = a[7]; out.rotZ = a[8]; out.offsetY = a[9]; out.capLift = a[10]; out.glow = a[11]; out.sparkle = a[12];
+  out.fov = a[6]; out.rotY = a[7]; out.rotZ = a[8]; out.offsetY = a[9]; out.capLift = a[10]; out.glow = a[11]; out.sparkle = a[12]; out.phoneDy = a[13]; out.phoneFit = a[14];
   return out;
 }
 export function arrayToPose(a: readonly number[]): Pose {
   return {
     camPos: [a[0], a[1], a[2]], camTarget: [a[3], a[4], a[5]],
-    fov: a[6], rotY: a[7], rotZ: a[8], offsetY: a[9], capLift: a[10], glow: a[11], sparkle: a[12],
+    fov: a[6], rotY: a[7], rotZ: a[8], offsetY: a[9], capLift: a[10], glow: a[11], sparkle: a[12], phoneDy: a[13], phoneFit: a[14],
   };
 }
 
@@ -235,4 +242,19 @@ export function cubicBezier(x1: number, y1: number, x2: number, y2: number): (t:
     }
     return bez(y1, y2, s);
   };
+}
+
+/* ---------- phone framing: keep the bottle between the nav bar and the caption panel ---------- */
+export const PHONE_NAV = 0.09; // fraction of the screen height taken by the nav bar at the top
+export const PHONE_PANEL = 0.32; // fraction taken by the caption panel at the bottom
+export interface Framing { fit: number; targetY: number; height: number; bandTop: number; bandBottom: number }
+/**
+ * On a phone-width screen: where the camera looks, how far it is pulled back, how tall the view is at the bottle, and the
+ * band (in scene height units) that is free of the nav bar and the caption panel. Used by the stage and by the tests.
+ */
+export function compactFraming(p: Pick<Pose, "camPos" | "camTarget" | "fov" | "phoneDy" | "phoneFit">): Framing {
+  const d = Math.hypot(p.camPos[0] - p.camTarget[0], p.camPos[1] - p.camTarget[1], p.camPos[2] - p.camTarget[2]);
+  const height = 2 * d * p.phoneFit * Math.tan((p.fov * Math.PI) / 360);
+  const targetY = p.camTarget[1] - p.phoneDy;
+  return { fit: p.phoneFit, targetY, height, bandTop: targetY + (0.5 - PHONE_NAV) * height, bandBottom: targetY - (0.5 - PHONE_PANEL) * height };
 }

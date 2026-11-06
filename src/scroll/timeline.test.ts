@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  ANCHORS, CHAPTER_RANGES, CHANNELS, KEYS, OMEGA, anchorProgress, arrayToPose, buildCurve, clamp01, createPoseState, cubicBezier,
+  ANCHORS, CHAPTER_RANGES, CHANNELS, KEYS, OMEGA, anchorProgress, arrayToPose, buildCurve, clamp01, compactFraming, createPoseState, cubicBezier,
   isChapterActive, poseToArray, sampleCurve, samplePose, scrollProgress, scrollYForProgress, stepPoseSpring, stepSpring, type ChapterId,
 } from "./timeline";
 
@@ -238,5 +238,41 @@ describe("cubicBezier (the same curves as the CSS tokens)", () => {
   it("ease-out is fast at the start; ease-in-out starts slow", () => {
     expect(easeOut(0.2)).toBeGreaterThan(0.5);
     expect(easeInOut(0.1)).toBeLessThan(0.1);
+  });
+});
+
+describe("phone framing (the bottle stays between the nav bar and the caption panel)", () => {
+  // the bottle is 2.43 tall, centred on its pivot, with the cap floating up by capLift
+  const subject = (p: ReturnType<typeof samplePose>): { top: number; bottom: number } => ({ top: p.offsetY + 1.215 + p.capLift, bottom: p.offsetY - 1.215 });
+  const rests: [string, number, number][] = [["whole bottle", 0.2, 0.27], ["power", 0.62, 0.78], ["buy", 0.88, 1.0]];
+  for (const [name, from, to] of rests) {
+    it(`${name}: the whole bottle, cap included, is inside the free band at every point of the scene`, () => {
+      for (let i = 0; i <= 20; i++) {
+        const p = samplePose(KEYS, from + ((to - from) * i) / 20);
+        const f = compactFraming(p);
+        const s = subject(p);
+        expect(s.top).toBeLessThanOrEqual(f.bandTop + 0.05); // not cropped by the nav bar
+        expect(s.bottom).toBeGreaterThanOrEqual(f.bandBottom - 0.05); // not hidden behind the caption panel
+      }
+    });
+  }
+  it("the base close-up pulls back to show context: the base is visible above the panel and more than the base alone is in view", () => {
+    const p = samplePose(KEYS, 0.34);
+    const f = compactFraming(p);
+    expect(-1.215).toBeGreaterThanOrEqual(f.bandBottom - 0.05);
+    expect(f.bandTop - f.bandBottom).toBeGreaterThan(1.1); // at least 1.1 scene units of bottle fit in the free band
+  });
+  it("the macro close-up is free to crop: no pull-back and no shift on any screen", () => {
+    for (const at of [0.44, 0.54]) {
+      const p = samplePose(KEYS, at);
+      expect(p.phoneFit).toBe(1);
+      expect(p.phoneDy).toBe(0);
+    }
+  });
+  it("the hero needs no caption panel, so it is only pulled back a little and not shifted", () => {
+    const p = samplePose(KEYS, 0);
+    expect(p.phoneDy).toBe(0);
+    expect(p.phoneFit).toBeGreaterThan(1);
+    expect(p.phoneFit).toBeLessThan(1.5);
   });
 });

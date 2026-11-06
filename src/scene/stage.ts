@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import type { Pose } from "../scroll/timeline";
+import { compactFraming, type Pose } from "../scroll/timeline";
 import { createBottle } from "./bottle";
 import { createSparkles } from "./particles";
 
@@ -61,13 +61,13 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
       resize();
     },
     render(p, t) {
-      // on a tall, narrow screen pull the camera back so the bottle's width still fits
-      const portrait = camera.aspect < 0.8;
-      const fit = portrait ? Math.pow(0.8 / camera.aspect, 0.55) : 1;
-      // on a phone there is no room beside the bottle for text, so a sideways offset becomes a lift: bottle above, text below
-      const shift = portrait ? p.camTarget[0] : 0;
-      const tx = p.camTarget[0] - shift;
-      const ty = p.camTarget[1] - shift * 0.8;
+      // On a phone-width screen (the same breakpoint as the CSS) there is no room beside the bottle for text: the caption
+      // sits in a panel at the bottom, so the bottle is centred and framed to sit between the nav bar and that panel.
+      const compact = window.innerWidth <= 700;
+      const framing = compact ? compactFraming(p) : null;
+      const fit = framing ? framing.fit : 1;
+      const tx = compact ? 0 : p.camTarget[0];
+      const ty = framing ? framing.targetY : p.camTarget[1];
       const tz = p.camTarget[2];
       const rx = p.camPos[0] - p.camTarget[0];
       const ry = p.camPos[1] - p.camTarget[1];
