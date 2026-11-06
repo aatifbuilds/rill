@@ -1,66 +1,121 @@
 *, *::before, *::after { box-sizing: border-box; }
 html { scroll-behavior: smooth; }
 body {
-  margin: 0;
-  background: var(--ground);
-  color: var(--ink);
-  font-family: var(--font);
-  font-size: var(--step-body);
-  line-height: 1.55;
-  -webkit-font-smoothing: antialiased;
+  margin: 0; background: var(--ground); color: var(--ink);
+  font-family: var(--font); font-size: var(--step-body); line-height: 1.55; -webkit-font-smoothing: antialiased;
 }
 a { color: inherit; text-decoration: none; }
 a:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+h1, h2, p, ul { margin: 0; }
 
 /* ---------- navigation: wordmark, three links, one action ---------- */
 .nav {
-  position: fixed; inset: 0 0 auto 0; z-index: 10;
-  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
-  padding: 20px var(--margin);
+  position: fixed; inset: 0 0 auto 0; z-index: 10; isolation: isolate;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 20px var(--margin);
 }
+/* a solid bar fades in under the nav once the page scrolls, so links never sit on the dark bottle */
+.nav::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ground); opacity: 0; transition: opacity 200ms var(--ease-out); }
+html.scrolled .nav::before { opacity: 1; }
 .wordmark { font-weight: 700; letter-spacing: 0.04em; font-size: var(--step-lead); justify-self: start; }
 .nav nav { display: flex; gap: clamp(18px, 3vw, 44px); font-size: var(--step-small); font-weight: 500; }
 .nav nav a { padding: 10px 4px; }
 .tab {
   justify-self: end; background: var(--ink); color: var(--ground);
   padding: 12px 20px; border-radius: var(--radius); font-size: var(--step-small); font-weight: 600;
-  min-height: 44px; display: inline-flex; align-items: center;
-  transition: opacity 200ms ease;
+  min-height: 44px; display: inline-flex; align-items: center; cursor: pointer;
+  transition: opacity 200ms var(--ease-out);
 }
-.tab:hover { opacity: 0.82; }
+@media (hover: hover) and (pointer: fine) { .tab:hover { opacity: 0.82; } }
 .tab:focus-visible { outline-color: var(--glow); }
+.tab.big { font-size: var(--step-body); padding: 16px 32px; }
 
-/* ---------- hero: the object, large; the headline half hidden behind it ---------- */
-.hero { position: relative; min-height: 100svh; overflow: hidden; }
-.hero h1 {
-  position: absolute; inset: 0; margin: 0; z-index: 3;
-  /* white + difference blend: dark over the light ground, white where it crosses the black bottle, so every letter stays readable */
-  color: #fff; mix-blend-mode: difference; pointer-events: none;
+/* ---------- the pinned story: a tall wrapper, a sticky stage, a canvas, and text chapters on top ----------
+   Note: the stage is the single stacking context. The canvas and the chapters carry NO z-index or opacity of their own,
+   so the headline's mix-blend-mode can blend against the canvas and the ground. */
+.story { position: relative; height: 780svh; }
+.stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: var(--ground); }
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.poster { display: none; }
+.chapter { position: absolute; inset: 0; pointer-events: none; visibility: hidden; }
+.chapter[data-chapter="hero"] { visibility: visible; }
+.chapter a { pointer-events: auto; }
+[data-reveal] { will-change: opacity, transform; }
+
+/* hero: oversized headline partly behind the bottle. White + difference blend = dark on the ground, white across the bottle. */
+.chapter[data-chapter="hero"] h1 {
+  position: absolute; inset: 0; color: #fff; mix-blend-mode: difference;
   font-weight: 300; font-size: var(--step-display); letter-spacing: -0.035em; line-height: 1; text-align: center;
 }
-.hero h1 span { position: absolute; left: 0; right: 0; }
-.hero h1 .l1 { top: 17svh; }
-.hero h1 .l2 { top: 50svh; }
-.object {
-  position: absolute; z-index: 2; left: 50%; bottom: -7svh; height: 76svh;
-  transform: translateX(-50%) rotate(8deg); transform-origin: 50% 100%;
-}
-.object svg { height: 100%; width: auto; display: block; }
-.side { position: absolute; z-index: 4; margin: 0; top: 71svh; max-width: 22ch; }
+.chapter[data-chapter="hero"] h1 span { position: absolute; left: 0; right: 0; }
+.chapter[data-chapter="hero"] h1 .l1 { top: 17svh; }
+.chapter[data-chapter="hero"] h1 .l2 { top: 50svh; }
+.side { position: absolute; top: 71svh; max-width: 22ch; }
 .side.left { left: var(--margin); }
 .side.right { right: var(--margin); text-align: right; list-style: none; padding: 0; font-weight: 500; }
 .side.right li + li { margin-top: 6px; }
-.cue { position: absolute; z-index: 3; left: 50%; bottom: 24px; transform: translateX(-50%); font-size: var(--step-small); font-weight: 500; padding: 10px; }
+.cue { position: absolute; left: var(--margin); bottom: 24px; font-size: var(--step-small); font-weight: 500; padding: 10px 0; }
+
+/* text chapters */
+.copy, .power, .buy { isolation: isolate; }
+.copy { position: absolute; max-width: 26ch; }
+.copy.right { right: var(--margin); top: 50%; transform: translateY(-50%); }
+.copy.low { left: var(--margin); bottom: 14svh; }
+.copy h2, .power h2, .buy h2 {
+  font-weight: 300; font-size: clamp(1.9rem, 1.2rem + 2.6vw, 3.5rem); line-height: 1.02; letter-spacing: -0.03em; margin-bottom: 0.45em;
+}
+.copy p, .power p, .buy p { color: var(--muted); max-width: 30ch; }
+
+/* power chapter: the gauge (a bowl that fills with the LED's purple) and the 5000 mAh figure */
+.power { position: absolute; right: var(--margin); top: 50%; transform: translateY(-50%); width: min(40vw, 30rem); }
+.gauge { display: grid; gap: 18px; justify-items: start; margin-bottom: 28px; }
+.gauge-bowl {
+  position: relative; width: min(30vw, 38svh, 17rem); aspect-ratio: 1; border-radius: 50%;
+  border: 2px solid var(--ink); overflow: hidden;
+}
+.gauge-fill { position: absolute; inset: 0; background: var(--glow); transform-origin: 50% 100%; transform: scaleY(0.06); }
+.gauge-bolt { position: absolute; inset: 0; margin: auto; width: 34%; fill: var(--ink); }
+.gauge-figure { font-weight: 300; font-size: clamp(3rem, 1.5rem + 5vw, 6.5rem); line-height: 1; letter-spacing: -0.04em; color: var(--ink) !important; max-width: none !important; }
+.gauge-figure .num { font-variant-numeric: tabular-nums; }
+.gauge-figure .unit { font-size: 0.32em; letter-spacing: 0; margin-left: 0.3em; font-weight: 500; }
+
+.buy { position: absolute; right: var(--margin); top: 50%; transform: translateY(-50%); width: min(40vw, 30rem); }
+.buy p { margin: 0 0 28px; }
+
+.footer { padding: 64px var(--margin); color: var(--muted); font-size: var(--step-small); }
 
 /* ---------- phone ---------- */
 @media (max-width: 700px) {
   .nav nav { display: none; }
   .nav { grid-template-columns: 1fr auto; }
-  .hero h1 { font-size: 15vw; }
-  .hero h1 .l1 { top: 20svh; }
-  .hero h1 .l2 { top: 40svh; }
-  .object { height: 58svh; bottom: -5svh; }
+  .chapter[data-chapter="hero"] h1 { font-size: 15vw; }
+  .chapter[data-chapter="hero"] h1 .l1 { top: 20svh; }
+  .chapter[data-chapter="hero"] h1 .l2 { top: 40svh; }
   .side { top: 12svh; max-width: none; }
-  .side.left { right: var(--margin); max-width: 30ch; font-size: var(--step-body); }
+  .side.left { right: var(--margin); max-width: 30ch; }
   .side.right { display: none; }
+  .cue { display: none; }
+  .side { top: 11svh; }
+  .chapter[data-chapter="hero"] h1 .l1 { top: 23svh; }
+  .chapter[data-chapter="hero"] h1 .l2 { top: 41svh; }
+  /* captions sit in a solid panel at the bottom, so text never lies on the dark bottle */
+  .copy.right, .copy.low, .power, .buy { left: 0; right: 0; top: auto; bottom: 0; transform: none; max-width: none; width: auto; padding: 22px var(--margin) 26px; }
+  .copy::before, .power::before, .buy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ground); opacity: var(--o, 0); }
+  .gauge { grid-template-columns: auto 1fr; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .gauge-bowl { width: 28vw; }
+  .gauge-figure { font-size: 2.6rem; }
 }
+
+/* ---------- static mode: no WebGL, or the visitor prefers reduced motion ---------- */
+html.static .story { height: auto; }
+html.static .stage { position: static; height: auto; overflow: visible; padding-top: 120px; }
+html.static #scene { display: none; }
+html.static .poster { display: block; height: min(70svh, 560px); margin: 0 auto; }
+html.static .poster svg { height: 100%; width: auto; display: block; margin: 0 auto; }
+html.static .chapter { position: relative; inset: auto; visibility: visible; padding: 40px var(--margin); }
+html.static .chapter[data-chapter="hero"] h1 { position: static; color: var(--ink); mix-blend-mode: normal; font-size: clamp(3rem, 11vw, 8rem); text-align: left; }
+html.static .chapter[data-chapter="hero"] h1 span { position: static; display: block; }
+html.static .side, html.static .copy, html.static .power, html.static .buy, html.static .cue {
+  position: static; transform: none; max-width: none; width: auto; margin: 16px 0 0; text-align: left;
+}
+html.static [data-reveal] { opacity: 1 !important; transform: none !important; }
+html.static .gauge-fill { transform: scaleY(1); }

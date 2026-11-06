@@ -45,3 +45,7 @@ Not used: `dataviz` (no real chart; the battery gauge is a graphic), `prototype`
 - `npm run dev` / `npm run preview`, then `playwright-cli` screenshots at the five scroll positions (desktop and mobile) viewed by me and compared to the reference; no console errors.
 - Reduced-motion and no-WebGL paths each checked once.
 - Nothing is published, uploaded or committed with secrets; no third-party assets in the repo.
+
+## Progress (6 Nov 2026, later)
+- DONE: Phase 0 (setup), Phase 1 (direction, Gate A approved), Phase 2 (3D bottle, Gate B passed), Phase 3 (scroll engine: pure timeline maths with 16 unit tests, Motion `scroll()`, critically damped spring, five scenes, text chapters, battery gauge, reduced-motion/no-WebGL static page, phone layout). All of lint, typecheck, test and build pass.
+- NEXT: Phase 4 (features poster list, back-of-card footer, imagery floor), Phase 5 (review-animations, animation-performance, code-split three.js), Phase 6 (impeccable, emil-design-eng, break-ui, mobile-native, checklist), Phase 7 (final look at 5 scroll positions desktop and phone), Phase 8 (README, scorecard, notes).

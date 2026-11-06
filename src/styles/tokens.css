@@ -18,3 +18,9 @@
 
   --font: "Work Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
+
+/* motion tokens (animate skill): strong curves, never the built-in ease-out for a deliberate move */
+:root {
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+}

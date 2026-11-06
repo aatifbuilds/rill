@@ -6,36 +6,83 @@
     <meta name="description" content="DRIP is a fictional smart water bottle: a design practice page." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>DRIP: cold steel, warm glow (a design practice page)</title>
+    <noscript><style>.story { height: auto !important } .stage { position: static !important; height: auto !important } .chapter { position: relative !important; visibility: visible !important }</style></noscript>
   </head>
   <body>
     <header class="nav">
       <a class="wordmark" href="#top" aria-label="DRIP, home">DRIP</a>
       <nav aria-label="Primary">
         <a href="#top">Home</a>
-        <a href="#about">About</a>
-        <a href="#shop">Shop</a>
+        <a href="#story">About</a>
+        <a href="#buy">Shop</a>
       </nav>
       <a class="tab" href="#buy">Buy now</a>
     </header>
 
     <main id="top">
-      <section class="hero" aria-labelledby="hero-title">
-        <h1 id="hero-title"><span class="l1">Cold steel,</span><span class="l2">warm glow.</span></h1>
-        <!-- Placeholder shape for the style frame. The real 3D bottle (three.js) replaces it in Phase 2. -->
-        <div class="object" role="img" aria-label="DRIP smart water bottle, matte black, glowing cap">
-          <svg viewBox="0 0 200 640" aria-hidden="true" focusable="false">
-            <rect x="62" y="6" width="76" height="46" rx="14" fill="#0b0a09" />
-            <rect x="70" y="2" width="60" height="9" rx="4.5" fill="#8b5cf6" />
-            <rect x="74" y="50" width="52" height="36" fill="#161412" />
-            <path d="M74 84 C30 100 22 130 22 178 L22 604 Q22 628 46 628 L154 628 Q178 628 178 604 L178 178 C178 130 170 100 126 84 Z" fill="#0f0d0c" />
-            <path d="M30 190 L30 600" stroke="#2a2724" stroke-width="3" fill="none" />
-            <rect x="22" y="596" width="156" height="32" rx="14" fill="#1d1a18" />
-          </svg>
+      <div class="story" id="story">
+        <div class="stage">
+          <canvas id="scene" aria-hidden="true"></canvas>
+          <!-- Static picture shown instead of the 3D scene when WebGL is unavailable or the visitor prefers reduced motion. -->
+          <div class="poster" role="img" aria-label="DRIP smart water bottle, matte black, with a glowing purple cap">
+            <svg viewBox="0 0 200 640" aria-hidden="true" focusable="false">
+              <rect x="62" y="6" width="76" height="46" rx="14" fill="#0b0a09" />
+              <rect x="70" y="2" width="60" height="9" rx="4.5" fill="#8b5cf6" />
+              <rect x="74" y="50" width="52" height="36" fill="#161412" />
+              <path d="M74 84 C30 100 22 130 22 178 L22 604 Q22 628 46 628 L154 628 Q178 628 178 604 L178 178 C178 130 170 100 126 84 Z" fill="#0f0d0c" />
+              <path d="M30 190 L30 600" stroke="#2a2724" stroke-width="3" fill="none" />
+              <rect x="22" y="596" width="156" height="32" rx="14" fill="#1d1a18" />
+            </svg>
+          </div>
+
+          <section class="chapter" data-chapter="hero" aria-labelledby="hero-title">
+            <h1 id="hero-title" data-reveal><span class="l1">Cold steel,</span><span class="l2">warm glow.</span></h1>
+            <p class="side left" data-reveal>A smart bottle that keeps water cold and glows when it is time to drink.</p>
+            <ul class="side right" data-reveal aria-label="Key facts"><li>600 ml</li><li>5000 mAh</li></ul>
+            <a class="cue" href="#story" data-reveal>Scroll down</a>
+          </section>
+
+          <section class="chapter" data-chapter="whole" aria-labelledby="t-whole">
+            <div class="copy right">
+              <h2 id="t-whole" data-reveal>Steady and quiet.</h2>
+              <p data-reveal>A rubber base grips any surface and keeps the steel from clanging.</p>
+            </div>
+          </section>
+
+          <section class="chapter" data-chapter="macro" aria-labelledby="t-macro">
+            <div class="copy low">
+              <h2 id="t-macro" data-reveal>A finish that catches the light.</h2>
+              <p data-reveal>Fine speckles in the coating glint as the bottle turns.</p>
+            </div>
+          </section>
+
+          <section class="chapter" data-chapter="power" aria-labelledby="t-power">
+            <div class="power">
+              <div class="gauge" role="img" aria-label="Battery gauge, 5000 milliamp hours">
+                <div class="gauge-bowl" data-reveal>
+                  <div class="gauge-fill" data-gauge-fill></div>
+                  <svg class="gauge-bolt" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2 5 13.5h5.5L10 22l9-12.5h-5.7z" /></svg>
+                </div>
+                <p class="gauge-figure" data-reveal><span class="num" data-gauge-number>5000</span><span class="unit">mAh</span></p>
+              </div>
+              <h2 id="t-power" data-reveal>A charge that lasts.</h2>
+              <p data-reveal>Weeks between charges, not days.</p>
+            </div>
+          </section>
+
+          <section class="chapter" data-chapter="buy" aria-labelledby="t-buy">
+            <div class="buy">
+              <h2 id="t-buy" data-reveal>One way to buy.</h2>
+              <p data-reveal>DRIP is a fictional product, made for a design practice.</p>
+              <a class="tab big" href="#buy" data-reveal>Buy now</a>
+            </div>
+          </section>
         </div>
-        <p class="side left">A smart bottle that keeps water cold and glows when it is time to drink.</p>
-        <ul class="side right" aria-label="Key facts"><li>600 ml</li><li>5000 mAh</li></ul>
-        <a class="cue" href="#about">Scroll down</a>
-      </section>
+      </div>
+
+      <footer id="buy" class="footer">
+        <p>DRIP is a fictional product for a design practice. Built with three.js and Motion.</p>
+      </footer>
     </main>
 
     <script type="module" src="/src/main.ts"></script>

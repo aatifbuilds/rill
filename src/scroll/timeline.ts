@@ -34,22 +34,22 @@ const pose = (p: Partial<Pose> & Pick<Pose, "camPos" | "camTarget">): Pose => ({
 
 /** Keyframes. Two keys with the same pose make a "hold" (the scene rests while the text is read). */
 export const KEYS: readonly Key[] = [
-  // 1 hero: tilted, big, base cropped by the bottom edge
-  { at: 0.0, pose: pose({ camPos: [0, -0.15, 5.6], camTarget: [0, -0.25, 0], rotY: 0.5, rotZ: -8 * DEG, offsetY: -0.35 }) },
-  { at: 0.1, pose: pose({ camPos: [0, -0.15, 5.6], camTarget: [0, -0.25, 0], rotY: 0.7, rotZ: -8 * DEG, offsetY: -0.35 }) },
+  // 1 hero: tilted, big, base cropped by the bottom edge, cap clear of the nav
+  { at: 0.0, pose: pose({ camPos: [0, -0.2, 4.6], camTarget: [0, -0.2, 0], rotY: 0.5, rotZ: -8 * DEG, offsetY: -0.55 }) },
+  { at: 0.1, pose: pose({ camPos: [0, -0.2, 4.6], camTarget: [0, -0.2, 0], rotY: 0.7, rotZ: -8 * DEG, offsetY: -0.55 }) },
   // 2 the whole bottle, upright, then down to the rubber base
-  { at: 0.2, pose: pose({ camPos: [0, 0, 7.4], camTarget: [0, 0, 0], fov: 28, rotY: 1.2 }) },
-  { at: 0.27, pose: pose({ camPos: [0, 0, 7.4], camTarget: [0, 0, 0], fov: 28, rotY: 1.6 }) },
-  { at: 0.34, pose: pose({ camPos: [1.3, -1.0, 3.2], camTarget: [0, -0.95, 0], rotY: 2.0 }) },
+  { at: 0.2, pose: pose({ camPos: [0, 0, 6.8], camTarget: [0, 0, 0], fov: 28, rotY: 1.2 }) },
+  { at: 0.27, pose: pose({ camPos: [0, 0, 6.8], camTarget: [0, 0, 0], fov: 28, rotY: 1.6 }) },
+  { at: 0.34, pose: pose({ camPos: [0.7, -1.0, 2.1], camTarget: [0, -1.05, 0], rotY: 2.0 }) },
   // 3 macro: the shoulder and its speckled finish
   { at: 0.44, pose: pose({ camPos: [0.5, 0.35, 1.9], camTarget: [0, 0.4, 0.3], rotY: 2.6, sparkle: 1 }) },
   { at: 0.54, pose: pose({ camPos: [0.4, 0.4, 1.7], camTarget: [0, 0.45, 0.32], rotY: 3.2, sparkle: 1 }) },
   // 4 power: the bottle steps left, the gauge takes the right half
   { at: 0.62, pose: pose({ camPos: [0.3, 0, 6.2], camTarget: [1.35, 0, 0], rotY: 3.6, glow: 1.2 }) },
   { at: 0.78, pose: pose({ camPos: [0.3, 0, 6.2], camTarget: [1.35, 0, 0], rotY: 4.1, glow: 1.2 }) },
-  // 5 the cap floats off; low angle looking up; the buy button
-  { at: 0.88, pose: pose({ camPos: [0, -0.6, 5.2], camTarget: [0, 0.35, 0], fov: 32, rotY: 4.6, capLift: 0.8, glow: 1.5 }) },
-  { at: 1.0, pose: pose({ camPos: [0, -1.0, 4.4], camTarget: [0, 0.75, 0], fov: 32, rotY: 5.0, capLift: 1.3, glow: 1.6 }) },
+  // 5 the cap floats off; the bottle stays left so the buy text has the right half
+  { at: 0.88, pose: pose({ camPos: [0.5, 0.1, 7.0], camTarget: [1.4, 0.5, 0], rotY: 4.6, capLift: 0.3, glow: 1.5 }) },
+  { at: 1.0, pose: pose({ camPos: [0.5, 0.1, 7.0], camTarget: [1.4, 0.5, 0], rotY: 5.0, capLift: 0.5, glow: 1.6 }) },
 ];
 
 export function samplePose(keys: readonly Key[], progress: number): Pose {
