@@ -6,6 +6,8 @@ import { createSparkles } from "./particles";
 
 export interface Stage {
   resize(): void;
+  setPixelRatioCap(cap: number): void;
+  maxPixelRatio: number;
   render(pose: Pose, timeSec: number): void;
   dispose(): void;
 }
@@ -38,11 +40,13 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
   let width = 1;
   let height = 1;
+  const maxPixelRatio = Math.min(window.devicePixelRatio || 1, 2); // never more than 2x: a 3x phone screen gains nothing visible
+  let cap = maxPixelRatio;
 
   const resize = (): void => {
     width = canvas.clientWidth || 1;
     height = canvas.clientHeight || 1;
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2)); // never more than 2x: a 3x phone screen gains nothing visible
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, cap));
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix(); // keep the aspect fresh, or the bottle stretches on resize
@@ -51,6 +55,11 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
 
   return {
     resize,
+    maxPixelRatio,
+    setPixelRatioCap(next) {
+      cap = next;
+      resize();
+    },
     render(p, t) {
       // on a tall, narrow screen pull the camera back so the bottle's width still fits
       const portrait = camera.aspect < 0.8;

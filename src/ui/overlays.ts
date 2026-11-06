@@ -1,30 +1,28 @@
-import { CHAPTERS, fadeWindow, type ChapterId } from "../scroll/timeline";
+import { CHAPTER_RANGES, isChapterActive, type ChapterId } from "../scroll/timeline";
 
-interface Chapter { el: HTMLElement; window: readonly [number, number, number, number]; reveals: HTMLElement[] }
-
-/** Text chapters: each fades and rises in, then out, as its window of the scroll passes. Only opacity and transform move. */
-export function createOverlays(root: ParentNode = document) {
-  const chapters: Chapter[] = [...root.querySelectorAll<HTMLElement>("[data-chapter]")].map((el) => ({
-    el,
-    window: CHAPTERS[el.dataset.chapter as ChapterId],
-    reveals: [...el.querySelectorAll<HTMLElement>("[data-reveal]")],
-  }));
+/**
+ * Text chapters are on or off, decided by the raw scroll position. Turning one on or off only toggles a class;
+ * the fade and rise are CSS transitions (time-based), so they look the same at any scroll speed and never flicker through.
+ */
+export function createOverlays(onChange?: (id: ChapterId, active: boolean) => void, root: ParentNode = document) {
+  const chapters = [...root.querySelectorAll<HTMLElement>("[data-chapter]")].map((el) => {
+    // the stagger index is set once here, never per frame
+    el.querySelectorAll<HTMLElement>("[data-reveal]").forEach((r, i) => r.style.setProperty("--i", String(i)));
+    return { id: el.dataset.chapter as ChapterId, el, active: false };
+  });
   return {
-    update(p: number): void {
+    update(progress: number): void {
       for (const c of chapters) {
-        const [a, b, cc, d] = c.window;
-        const o = fadeWindow(p, a, b, cc, d);
-        const on = o > 0.004;
-        c.el.style.setProperty("--o", o.toFixed(3)); // lets the phone caption panel fade with its chapter
-        c.el.style.visibility = on ? "visible" : "hidden"; // hidden text is also out of the tab order
-        if (!on) continue;
-        c.reveals.forEach((r, i) => {
-          const lag = i * 0.01; // a 10 ms-of-scroll stagger between lines (the animate skill's 30-80 ms, in scroll terms)
-          const ro = fadeWindow(p, a + lag, b + lag, cc, d);
-          r.style.opacity = ro.toFixed(3);
-          r.style.transform = `translate3d(0, ${((1 - ro) * 18).toFixed(1)}px, 0)`; // rises into place; never scale(0)
-        });
+        if (!(c.id in CHAPTER_RANGES)) continue;
+        const next = isChapterActive(c.id, progress, c.active);
+        if (next === c.active) continue;
+        c.active = next;
+        c.el.classList.toggle("is-active", next);
+        onChange?.(c.id, next);
       }
+    },
+    active(): ChapterId[] {
+      return chapters.filter((c) => c.active).map((c) => c.id);
     },
   };
 }

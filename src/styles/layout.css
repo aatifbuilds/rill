@@ -1,5 +1,5 @@
 *, *::before, *::after { box-sizing: border-box; }
-html { scroll-behavior: smooth; }
+/* no CSS smooth scroll: the browser would fly through every scene in half a second. Buttons are handled in src/ui/anchors.ts. */
 body {
   margin: 0; background: var(--ground); color: var(--ink);
   font-family: var(--font); font-size: var(--step-body); line-height: 1.55; -webkit-font-smoothing: antialiased;
@@ -32,23 +32,32 @@ html.scrolled .nav::before { opacity: 1; }
 /* ---------- the pinned story: a tall wrapper, a sticky stage, a canvas, and text chapters on top ----------
    Note: the stage is the single stacking context. The canvas and the chapters carry NO z-index or opacity of their own,
    so the headline's mix-blend-mode can blend against the canvas and the ground. */
-.story { position: relative; height: 780svh; }
+.story { position: relative; height: 960svh; }
 .stage { position: sticky; top: 0; height: 100svh; overflow: hidden; background: var(--ground); }
 #scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .poster { display: none; }
-.chapter { position: absolute; inset: 0; pointer-events: none; visibility: hidden; }
-.chapter[data-chapter="hero"] { visibility: visible; }
+/* Chapters are on or off (a class set from the scroll position); the fade and rise are time-based transitions, so they look
+   the same at any scroll speed. Only opacity and transform change. Exit is quick and unstaggered, entry is slower with a stagger. */
+.chapter { position: absolute; inset: 0; pointer-events: none; visibility: hidden; transition: visibility 0s linear 240ms; }
+.chapter.is-active { visibility: visible; transition-delay: 0s; }
 .chapter a { pointer-events: auto; }
-[data-reveal] { will-change: opacity, transform; }
+[data-reveal] {
+  opacity: 0; transform: translate3d(0, 18px, 0);
+  transition: opacity 220ms var(--ease-out), transform 220ms var(--ease-out);
+}
+.chapter.is-active [data-reveal] {
+  opacity: 1; transform: translate3d(0, 0, 0);
+  transition-duration: 450ms; transition-delay: calc(120ms + var(--i, 0) * 70ms);
+}
 
 /* hero: oversized headline partly behind the bottle. White + difference blend = dark on the ground, white across the bottle. */
 .chapter[data-chapter="hero"] h1 {
-  position: absolute; inset: 0; color: #fff; mix-blend-mode: difference;
+  position: absolute; left: 0; right: 0; top: 10svh; height: 62svh; color: #fff; mix-blend-mode: difference; /* a band, not the whole screen: less to blend each frame */
   font-weight: 300; font-size: var(--step-display); letter-spacing: -0.035em; line-height: 1; text-align: center;
 }
 .chapter[data-chapter="hero"] h1 span { position: absolute; left: 0; right: 0; }
-.chapter[data-chapter="hero"] h1 .l1 { top: 17svh; }
-.chapter[data-chapter="hero"] h1 .l2 { top: 50svh; }
+.chapter[data-chapter="hero"] h1 .l1 { top: 7svh; }
+.chapter[data-chapter="hero"] h1 .l2 { top: 40svh; }
 .side { position: absolute; top: 71svh; max-width: 22ch; }
 .side.left { left: var(--margin); }
 .side.right { right: var(--margin); text-align: right; list-style: none; padding: 0; font-weight: 500; }
@@ -87,9 +96,7 @@ html.scrolled .nav::before { opacity: 1; }
 @media (max-width: 700px) {
   .nav nav { display: none; }
   .nav { grid-template-columns: 1fr auto; }
-  .chapter[data-chapter="hero"] h1 { font-size: 15vw; }
-  .chapter[data-chapter="hero"] h1 .l1 { top: 20svh; }
-  .chapter[data-chapter="hero"] h1 .l2 { top: 40svh; }
+  .chapter[data-chapter="hero"] h1 { font-size: 15vw; top: 0; height: 60svh; }
   .side { top: 12svh; max-width: none; }
   .side.left { right: var(--margin); max-width: 30ch; }
   .side.right { display: none; }
@@ -99,7 +106,8 @@ html.scrolled .nav::before { opacity: 1; }
   .chapter[data-chapter="hero"] h1 .l2 { top: 41svh; }
   /* captions sit in a solid panel at the bottom, so text never lies on the dark bottle */
   .copy.right, .copy.low, .power, .buy { left: 0; right: 0; top: auto; bottom: 0; transform: none; max-width: none; width: auto; padding: 22px var(--margin) 26px; }
-  .copy::before, .power::before, .buy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ground); opacity: var(--o, 0); }
+  .copy::before, .power::before, .buy::before { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--ground); opacity: 0; transition: opacity 220ms var(--ease-out); }
+  .chapter.is-active .copy::before, .chapter.is-active .power::before, .chapter.is-active .buy::before { opacity: 1; transition-duration: 450ms; }
   .gauge { grid-template-columns: auto 1fr; align-items: center; gap: 16px; margin-bottom: 12px; }
   .gauge-bowl { width: 28vw; }
   .gauge-figure { font-size: 2.6rem; }
@@ -117,5 +125,6 @@ html.static .chapter[data-chapter="hero"] h1 span { position: static; display: b
 html.static .side, html.static .copy, html.static .power, html.static .buy, html.static .cue {
   position: static; transform: none; max-width: none; width: auto; margin: 16px 0 0; text-align: left;
 }
-html.static [data-reveal] { opacity: 1 !important; transform: none !important; }
+html.static [data-reveal] { opacity: 1 !important; transform: none !important; transition: none; }
+html.static .copy::before, html.static .power::before, html.static .buy::before { display: none; }
 html.static .gauge-fill { transform: scaleY(1); }
