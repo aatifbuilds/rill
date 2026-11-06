@@ -1,0 +1,20 @@
+/* Design tokens. Direction: hero-object (design-taste-frontend). Palette is fixed by the reference page's look:
+   a warm light ground, a near-black object, and ONE accent, the purple LED glow, used only as light (never as a UI colour). */
+:root {
+  --ground: #ecebe7;
+  --ink: #0f0d0c;
+  --muted: #4b4743; /* secondary text, 7:1 on the ground */
+  --glow: #8b5cf6; /* the product's own LED light */
+
+  --margin: clamp(20px, 4vw, 64px);
+  --radius: 2px; /* one corner radius for the whole page */
+
+  /* five type steps (direction sheet): small, body, lead, head, plus the display size set per use */
+  --step-small: clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem);
+  --step-body: clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem);
+  --step-lead: clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem);
+  --step-head: clamp(2rem, 1.3rem + 3.2vw, 4rem);
+  --step-display: clamp(3.5rem, 11vw, 11rem);
+
+  --font: "Work Sans Variable", system-ui, -apple-system, "Segoe UI", sans-serif;
+}

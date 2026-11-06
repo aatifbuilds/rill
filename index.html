@@ -3,10 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>DRIP: the future of hydration (private practice build)</title>
+    <meta name="description" content="DRIP is a fictional smart water bottle: a design practice page." />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>DRIP: cold steel, warm glow (a design practice page)</title>
   </head>
   <body>
-    <div id="app"></div>
+    <header class="nav">
+      <a class="wordmark" href="#top" aria-label="DRIP, home">DRIP</a>
+      <nav aria-label="Primary">
+        <a href="#top">Home</a>
+        <a href="#about">About</a>
+        <a href="#shop">Shop</a>
+      </nav>
+      <a class="tab" href="#buy">Buy now</a>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <h1 id="hero-title"><span class="l1">Cold steel,</span><span class="l2">warm glow.</span></h1>
+        <!-- Placeholder shape for the style frame. The real 3D bottle (three.js) replaces it in Phase 2. -->
+        <div class="object" role="img" aria-label="DRIP smart water bottle, matte black, glowing cap">
+          <svg viewBox="0 0 200 640" aria-hidden="true" focusable="false">
+            <rect x="62" y="6" width="76" height="46" rx="14" fill="#0b0a09" />
+            <rect x="70" y="2" width="60" height="9" rx="4.5" fill="#8b5cf6" />
+            <rect x="74" y="50" width="52" height="36" fill="#161412" />
+            <path d="M74 84 C30 100 22 130 22 178 L22 604 Q22 628 46 628 L154 628 Q178 628 178 604 L178 178 C178 130 170 100 126 84 Z" fill="#0f0d0c" />
+            <path d="M30 190 L30 600" stroke="#2a2724" stroke-width="3" fill="none" />
+            <rect x="22" y="596" width="156" height="32" rx="14" fill="#1d1a18" />
+          </svg>
+        </div>
+        <p class="side left">A smart bottle that keeps water cold and glows when it is time to drink.</p>
+        <ul class="side right" aria-label="Key facts"><li>600 ml</li><li>5000 mAh</li></ul>
+        <a class="cue" href="#about">Scroll down</a>
+      </section>
+    </main>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
