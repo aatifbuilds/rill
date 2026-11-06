@@ -22,7 +22,7 @@ function makeCanvas(size: number): [HTMLCanvasElement, CanvasRenderingContext2D]
 }
 
 /**
- * The bottle's surface, drawn in code: a fine speckled finish plus an embossed DRIP wordmark.
+ * The bottle's surface, drawn in code: a fine speckled finish plus an embossed RILL wordmark.
  * `bump` gives the tiny relief; `rough` varies how shiny each speck is (the glints) and makes the wordmark glossier.
  * Both wrap once around the bottle (u) and run bottom to top (v).
  */
@@ -58,7 +58,7 @@ export function makeSurfaceMaps(size: number): { bump: THREE.CanvasTexture; roug
     ctx.font = `700 ${Math.round(size * 0.075)}px "Work Sans Variable", system-ui, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText("DRIP", 0, 0);
+    ctx.fillText("RILL", 0, 0);
     ctx.restore();
   };
   drawWord(bump, "#f2f2f2");

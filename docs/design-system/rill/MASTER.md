@@ -6,7 +6,7 @@
 
 ---
 
-**Project:** DRIP
+**Project:** RILL
 **Generated:** 2026-11-06 21:01:50
 **Category:** Luxury/Premium Brand
 **Design Dials:** Variance 6/10 (Balanced / Modern) | Motion 7/10 (Standard) | Density 3/10 (Spacious)

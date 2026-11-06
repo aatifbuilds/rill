@@ -1,11 +1,11 @@
-# Design direction: DRIP (private practice)
+# Design direction: RILL (private practice)
 
-Sources: `docs/direction-sheet.md` (design-taste-frontend), `docs/design-system/drip/MASTER.md` and lookups (ui-ux-pro-max), reference stills in git-ignored `docs/reference/`.
+Sources: `docs/direction-sheet.md` (design-taste-frontend), `docs/design-system/rill/MASTER.md` and lookups (ui-ux-pro-max), reference stills in git-ignored `docs/reference/`.
 **Status: Gate A approved (6 Nov 2026). Phases 2 and 3 built: the 3D bottle and the scroll story. Gate B passed: the procedural bottle looks good enough, so no fallback was needed.**
 
 ## The idea
 "On this page, the bottle's own matte-black steel and its single purple LED become the device": a black object on a light ground, with one glow as the only colour. Nearest competitor test: a generic bottle page would show a catalogue shot; ours has no picture, only the object, cropped, and light.
-Inventory (what only DRIP has): the name (a drop, and slang for style); matte-black stainless steel; the speckled finish; the rubber base that keeps it quiet; 600 ml; the 5000 mAh battery; the smart cap with a purple LED; the hourly "time to drink" glow; the cold; the weeks a charge lasts.
+Inventory (what only RILL has): the name (a rill is a small stream); matte-black stainless steel; the speckled finish; the rubber base that keeps it quiet; 600 ml; the 5000 mAh battery; the smart cap with a purple LED; the hourly "time to drink" glow; the cold; the weeks a charge lasts.
 
 ## Argument (claim, proof, section)
 | Section (role) | Claim | Proof |
@@ -15,7 +15,7 @@ Inventory (what only DRIP has): the name (a drop, and slang for style); matte-bl
 | Features (poster list) | It does four things | Steady and quiet (rubber base), speckled steel, a charge that lasts weeks, a cap that glows when it is time to drink |
 | Stats | 5000 mAh | The figure, set large on the frame of the 3D scene |
 | CTA | One way to buy | The cap returns from a new angle, one button |
-| Footer | Honest sign-off | "DRIP is a fictional product for a design practice" |
+| Footer | Honest sign-off | "RILL is a fictional product for a design practice" |
 
 ## Chosen direction (dealt by design-taste-frontend, seed 1310354238)
 - **Direction:** `hero-object` ("The object, large"). Why: the idea is the cropped object and one light; it matches how the reference opens.
@@ -38,7 +38,7 @@ Inventory (what only DRIP has): the name (a drop, and slang for style); matte-bl
 - **playwright-cli:** found three real problems in the first screenshot (text collision, hidden letter, favicon 404) that a code read would not.
 
 ## Build notes, Phases 2-3 (the 3D bottle and the scroll story)
-- **What was built:** a procedural matte-black steel bottle (lathe geometry, speckled bump and roughness maps drawn in code, embossed DRIP, rubber base, closed smart cap with a purple LED, halo and point light), a sparkle shader that glints on the steel, soft studio lighting from `RoomEnvironment`, and five scenes driven by scroll: hero, whole bottle and rubber base, macro finish, battery gauge, floating cap and buy.
+- **What was built:** a procedural matte-black steel bottle (lathe geometry, speckled bump and roughness maps drawn in code, embossed RILL, rubber base, closed smart cap with a purple LED, halo and point light), a sparkle shader that glints on the steel, soft studio lighting from `RoomEnvironment`, and five scenes driven by scroll: hero, whole bottle and rubber base, macro finish, battery gauge, floating cap and buy.
 - **Scroll feel:** progress through a 780svh pinned wrapper is read with Motion's `scroll()`, smoothed with a critically damped spring (apple-design: direct, no overshoot, always continues from the current value, so reversing mid-flight just redirects it), and mapped to camera poses by keyframes with smootherstep easing. All of this maths is pure functions with 16 unit tests (`src/scroll/timeline.ts`).
 - **Text motion (animate skill):** purpose "explanation" (marketing, delight allowed); only `transform` and `opacity`; entrances rise 18px and never use `scale(0)`; a small stagger between lines; named transitions only; strong custom curves in `tokens.css`; hover gated by `(hover: hover) and (pointer: fine)`.
 - **Quality rules from ui-ux-pro-max applied:** pixel ratio capped at 2; textures, geometry and materials disposed; camera aspect updated on resize; rendering paused when the story is off-screen or the tab is hidden; sticky nav gets a solid bar once the page scrolls.

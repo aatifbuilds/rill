@@ -1,6 +1,6 @@
 # DIRECTION SHEET — The object, large
 seed 1310354238 · drawn 2026-11-06 · redraws: 9 · sector physical-product
-Brief: DRIP, a smart matte-black stainless steel water bottle (600 ml, 5000 mAh battery, rubber base, speckled finish, glowing smart cap); a scroll-driven product page where a 3D camera moves through the bottle
+Brief: RILL, a smart matte-black stainless steel water bottle (600 ml, 5000 mAh battery, rubber base, speckled finish, glowing smart cap); a scroll-driven product page where a 3D camera moves through the bottle
 
 | | |
 | --- | --- |

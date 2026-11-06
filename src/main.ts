@@ -24,7 +24,7 @@ markScrolled();
 
 /** Static mode: a plain readable page with a poster picture instead of the scroll-driven 3D scene. */
 const useStaticPage = (reason: string): void => {
-  console.info(`DRIP: showing the static page (${reason}).`);
+  console.info(`RILL: showing the static page (${reason}).`);
   root.classList.add("static");
 };
 

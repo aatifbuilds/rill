@@ -1,9 +1,9 @@
 {
-  "name": "bottle-page",
+  "name": "rill",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "DRIP: a private practice rebuild of a scroll-driven smart-bottle product page (three.js + Motion).",
+  "description": "RILL: a fictional smart-bottle scroll page (three.js + Motion), a design practice build.",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",

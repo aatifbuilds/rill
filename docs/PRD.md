@@ -1,4 +1,4 @@
-# PRD: bottle-page ("DRIP")
+# PRD: bottle-page ("RILL")
 
 ## Problem
 I want to learn web page, UI and UX design by doing: rebuild a scroll-driven product page I saw in a reel and learn what each

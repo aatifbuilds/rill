@@ -1,11 +1,11 @@
-# Project: bottle-page ("DRIP", a private practice build)
+# Project: bottle-page ("RILL", a fictional product, a design practice build)
 
 ## Goal
 Learn web page, UI and UX design by rebuilding a scroll-driven smart-bottle product page seen in a reel, and by trying
 our web-design skills on it (see docs/plan.md for the phases and docs/design.md for the chosen direction).
 
 ## Hard rules
-- **Private practice.** Never publish, deploy or share this site without the owner's explicit OK. If it is ever published, rename it first ("DRIP" is the creator's demo name).
+- **Published on the owner's OK, 6 Nov 2026** (public GitHub repo and GitHub Pages) as RILL, a fictional product. It was renamed from DRIP, the original creator's demo name, before publishing. Never publish anything else, or change what is public, without the owner's explicit OK.
 - **No third-party assets.** Frames from the reel live only in git-ignored `docs/reference/` for side-by-side checks. Never copy them, their text or their artwork into `src/` or `public/`. All copy and art are original.
 - **Free tools only:** three.js, Motion, Vite, Vitest, ESLint (all MIT). Fonts self-hosted through `@fontsource/*` (no external requests).
 - Secrets go in `.env.local` only (there are none today). `.env*` stays in `.gitignore`.
