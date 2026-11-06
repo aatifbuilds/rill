@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { bodyRadiusAt } from "./bottle";
+import { bodyRadiusAt } from "./shapes";
 
 /**
  * Sparkles that glint on the speckled steel. They sit on the bottle's surface (a child of the bottle, so they turn with it)
