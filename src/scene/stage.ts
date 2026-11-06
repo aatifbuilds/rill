@@ -1,9 +1,9 @@
 import * as THREE from "three";
-import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { compactFraming, type Pose } from "../scroll/timeline";
 import { createBottle } from "./bottle";
 import { createHeroTitle } from "./heroTitle";
 import { createSparkles } from "./particles";
+import { createStudio } from "./studio";
 
 export interface Stage {
   resize(): void;
@@ -24,7 +24,7 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   const small = Math.min(window.innerWidth, window.innerHeight) < 700;
   const scene = new THREE.Scene();
   const pmrem = new THREE.PMREMGenerator(renderer);
-  const envTex = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  const envTex = pmrem.fromScene(createStudio(), 0.03).texture;
   scene.environment = envTex;
 
   const key = new THREE.DirectionalLight(0xffffff, 1.6);
