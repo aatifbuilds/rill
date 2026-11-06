@@ -72,3 +72,10 @@ Bundle is 578 kB (146 kB gzipped), mostly three.js: code-split the 3D stage in P
 **Not provable from here:** the real feel on a trackpad and a real GPU (my browser renders in software, frame time 16.7 ms at DPR 1). `/review-animations` is reserved for the owner to run; I did not imitate it.
 
 **Scorecard:** animation-performance: its "name the cause before changing code" rule and its inherited-variable and `will-change` warnings found items 5 and 6. apple-design: the interruptible, value-continuing spring is what makes a reversal feel physical.
+
+## Realistic bottle (6 Nov 2026)
+Owner: "choppy, not very realistic". Same design (black body, purple LED cap), rebuilt in code, no Blender.
+**Why it looked fake:** 11-point outline with sharp corners, no cap detail, 1-pixel random speckle that shimmers, a generic room reflected in it (one soft blob, no highlight lines), no darkening in creases.
+**Fixes:** `profile.ts` rounds every edge with true arcs (fillets); `shapes.ts` holds the outlines (body with a three-bend shoulder and rolled lip, recessed rubber foot, cap with a steel ring, rubber seal, LED strip in a groove); the finish is a fine powder-coat grain stored as a **normal map** (tells the light which way each tiny patch faces), with a soft raised wordmark, roughness that varies grain to grain, an ambient-occlusion strip (dark in the foot and neck creases) and grip ridges on the cap; `studio.ts` makes our own strip-light "photo studio" to reflect, which gives the thin vertical highlight lines; the body is a coating with a smooth clear layer (crisp reflections over the grain) and the ring is brushed steel (anisotropy).
+**Measured:** 54k triangles on desktop, 36k on phones (about 24k before); texture memory about the same; grain generation 233 ms (desktop) and 60 ms (phone-size) at start; headline flicker test unchanged (dark in all frames, both engines); Chromium and WebKit look the same; 76 tests.
+**Not provable from here:** real frame rate on a phone GPU (my browser is capped at 30 fps in software, old and new alike).
