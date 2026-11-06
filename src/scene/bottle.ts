@@ -46,6 +46,8 @@ export function createBottle(textureSize: number): Bottle {
   const capSteel = new THREE.MeshPhysicalMaterial({ color: 0x0e0c0b, metalness: 0.85, roughness: 0.38, clearcoat: 0.3, clearcoatRoughness: 0.3, envMapIntensity: 1.2 });
   const rubber = new THREE.MeshStandardMaterial({ color: 0x1c1b1a, metalness: 0, roughness: 0.96 });
   const ledMat = new THREE.MeshBasicMaterial({ color: 0xb89cff, toneMapped: false });
+  // Everything solid on the bottle writes 1 into the stencil buffer, so the hero headline can turn white where it crosses the bottle.
+  for (const m of [steel, capSteel, rubber, ledMat]) Object.assign(m, { stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
   const glowTex = makeGlowTexture();
   const glowMat = new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.6 });
 

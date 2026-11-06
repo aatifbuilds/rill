@@ -34,6 +34,7 @@ function start(storyEl: HTMLElement, canvasEl: HTMLCanvasElement): void {
   const activations: { t: number; id: string; on: boolean }[] = []; // for tests in development
   const overlays = createOverlays((id, on) => {
     if (id === "power") gauge.setActive(on);
+    if (id === "hero") stage.setHeroActive(on);
     if (import.meta.env.DEV) activations.push({ t: Math.round(performance.now()), id, on });
   });
 

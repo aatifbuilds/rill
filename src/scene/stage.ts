@@ -2,19 +2,21 @@ import * as THREE from "three";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { compactFraming, type Pose } from "../scroll/timeline";
 import { createBottle } from "./bottle";
+import { createHeroTitle } from "./heroTitle";
 import { createSparkles } from "./particles";
 
 export interface Stage {
   resize(): void;
   setPixelRatioCap(cap: number): void;
   maxPixelRatio: number;
+  setHeroActive(on: boolean): void;
   render(pose: Pose, timeSec: number): void;
   dispose(): void;
 }
 
 /** The three.js world: renderer, soft studio light, camera, the bottle and its sparkles. Throws if WebGL is unavailable. */
 export function createStage(canvas: HTMLCanvasElement): Stage {
-  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, stencil: true, powerPreference: "high-performance" });
   renderer.setClearColor(0x000000, 0); // transparent: the page's ground colour shows through
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.05;
@@ -38,6 +40,8 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   scene.add(bottle.root);
 
   const camera = new THREE.PerspectiveCamera(30, 1, 0.1, 60);
+  const heroTitle = createHeroTitle();
+  let lastT = 0;
   let width = 1;
   let height = 1;
   const maxPixelRatio = Math.min(window.devicePixelRatio || 1, 2); // never more than 2x: a 3x phone screen gains nothing visible
@@ -50,12 +54,14 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
     renderer.setSize(width, height, false);
     camera.aspect = width / height;
     camera.updateProjectionMatrix(); // keep the aspect fresh, or the bottle stretches on resize
+    heroTitle.resize(width, height, window.innerWidth <= 700, renderer.getPixelRatio());
   };
   resize();
 
   return {
     resize,
     maxPixelRatio,
+    setHeroActive: (on) => heroTitle.setActive(on),
     setPixelRatioCap(next) {
       cap = next;
       resize();
@@ -81,8 +87,12 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
       bottle.update(p);
       sparkles.update(t, p.sparkle, height * renderer.getPixelRatio(), p.fov);
       renderer.render(scene, camera);
+      const dt = Math.min(0.05, Math.max(0, t - lastT));
+      lastT = t;
+      heroTitle.render(renderer, dt); // the headline, drawn over the bottle using its stencil mask
     },
     dispose() {
+      heroTitle.dispose();
       sparkles.dispose();
       bottle.dispose();
       envTex.dispose();
