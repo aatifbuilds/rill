@@ -49,3 +49,6 @@ Not used: `dataviz` (no real chart; the battery gauge is a graphic), `prototype`
 ## Progress (6 Nov 2026, later)
 - DONE: Phase 0 (setup), Phase 1 (direction, Gate A approved), Phase 2 (3D bottle, Gate B passed), Phase 3 (scroll engine: pure timeline maths with 16 unit tests, Motion `scroll()`, critically damped spring, five scenes, text chapters, battery gauge, reduced-motion/no-WebGL static page, phone layout). All of lint, typecheck, test and build pass.
 - NEXT: Phase 4 (features poster list, back-of-card footer, imagery floor), Phase 5 (review-animations, animation-performance, code-split three.js), Phase 6 (impeccable, emil-design-eng, break-ui, mobile-native, checklist), Phase 7 (final look at 5 scroll positions desktop and phone), Phase 8 (README, scorecard, notes).
+
+## Smoothness pass (6 Nov 2026): DONE
+Owner feedback: jerky on fast scroll, buttons fly through all scenes. Studied Apple's UK page scripts; replaced progress smoothing with pose-space springs, a monotone camera path, time-based text chapters, a button glide (owner chose "glide straight there"), adaptive resolution, and removed CSS smooth scroll. 31 unit tests; behaviour measured in the browser. See docs/design.md. NEXT: the owner tries it on a real Mac and trackpad and runs `/review-animations`; then Phase 4 onward.

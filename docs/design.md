@@ -57,3 +57,18 @@ Round 1 (nine problems): bottle too squat (a jar, not a bottle); hero did not cr
 
 ## Known limits and next
 Bundle is 578 kB (146 kB gzipped), mostly three.js: code-split the 3D stage in Phase 5. Frame rate measured at about 61 fps with software rendering in a headless browser; not measured on a real GPU. Phase 4 still to build: the features poster list, the back-of-card footer, real stills for the imagery floor.
+
+## Smoothness pass (6 Nov 2026): making the scroll feel like Apple's
+**Owner feedback:** scrolling fast felt jerky; clicking a button made every animation fly by.
+**What Apple's UK pages do** (read from the public page source and main script of apple.com/uk/airpods-pro; analysis only, nothing copied): each scroll-driven keyframe has its own `ease` (about 0.3), a per-frame blend of that property's *value* toward its target at the current scroll, so a fast scroll never replays every intermediate state; entrances are **time-based tweens** (about 0.33-0.4 s, `easeInOutQuad`, a 0.15-0.2 s delay, staggered); no CSS `scroll-behavior`; reduced motion respected.
+
+**Diagnosis (animation-performance skill, cause named for each):**
+1. `scroll-behavior: smooth` made the browser fly through the whole story in about 0.5 s on any `#` link. 2. One spring smoothed the scroll *progress*, so a fast scroll swept the camera through every scene. 3. Text was scrubbed per frame by JS, so chapters flickered through. 4. `smootherstep` between every pair of keys stopped the camera at each key (stop-start). 5. A `--o` custom property set every frame (an inherited variable recalculates styles for every descendant). 6. `will-change` always on 12 elements. 7. A full-viewport `mix-blend-mode` headline over a live canvas (needs a device recording). 8. Pixel ratio fixed at 2 (needs a device recording).
+
+**Fixes:** no CSS smooth scroll; the pose (14 channels) follows a **target pose** with its own critically damped spring (smoothing values, not progress); a **monotone cubic** path through the keyframes (continuous velocity, no overshoot, flat holds); **time-based text chapters** (a class toggles named CSS transitions: enter 450 ms with a 120 ms delay and 70 ms stagger, exit 220 ms); the gauge counts up on entry; **buttons jump the scroll and the camera glides** (about 1.6 s, any wheel/touch/key hands control straight back); adaptive pixel ratio; the blended headline shrunk to a band; no per-frame allocation or style writes.
+
+**Measured in the real browser** (dev hook, software rendering): jump 0 to 0.5: camera lands exactly on target in 0.7 s, no overshoot, only the destination chapter turns on (the scene between is never shown); Buy now / About / Home: glide to the exact target pose, no overshoot, only the destination chapter on; rapid scroll down and up: each chapter turns on and off once per direction, no repeat at an edge. 31 unit tests cover the curve (no overshoot, flat holds, continuous slope, no stop at a key), the pose springs, chapter hysteresis and overlap, the button map, easing and adaptive quality.
+
+**Not provable from here:** the real feel on a trackpad and a real GPU (my browser renders in software, frame time 16.7 ms at DPR 1). `/review-animations` is reserved for the owner to run; I did not imitate it.
+
+**Scorecard:** animation-performance: its "name the cause before changing code" rule and its inherited-variable and `will-change` warnings found items 5 and 6. apple-design: the interruptible, value-continuing spring is what makes a reversal feel physical.
