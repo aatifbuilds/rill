@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import type { Pose } from "../scroll/timeline";
 import { BODY, CAP, CAP_RING, DIFFUSER, FOOT, HEIGHT, SEAL } from "./shapes";
-import { makeGlowTexture, makeSurfaceMaps } from "./textures";
+import { makeGlowTexture, makeGripMap, makeSurfaceMaps } from "./textures";
 
 export { bodyRadiusAt } from "./shapes";
 
@@ -26,23 +26,27 @@ export interface Bottle {
   dispose(): void;
 }
 
-export function createBottle(textureSize: number): Bottle {
+export function createBottle(textureSize: number, anisotropy = 4): Bottle {
   const root = new THREE.Group();
   root.rotation.order = "ZYX"; // spin about its own axis first, then tilt
   const pivot = new THREE.Group();
   pivot.position.y = -HEIGHT / 2; // so it rotates about its middle
   root.add(pivot);
 
-  const { bump, rough } = makeSurfaceMaps(textureSize);
+  const { normal, rough, ao } = makeSurfaceMaps(textureSize, anisotropy);
+  const grip = makeGripMap(anisotropy);
   const steel = new THREE.MeshPhysicalMaterial({
-    color: 0x151210, metalness: 0.9, roughness: 1, roughnessMap: rough, bumpMap: bump, bumpScale: 1.2,
-    clearcoat: 0.2, clearcoatRoughness: 0.45, envMapIntensity: 1.15,
+    color: 0x151210, metalness: 0.9, roughness: 1, roughnessMap: rough, normalMap: normal, normalScale: new THREE.Vector2(1, 1),
+    aoMap: ao, aoMapIntensity: 1, clearcoat: 0.2, clearcoatRoughness: 0.45, envMapIntensity: 1.15,
   });
   const capSteel = new THREE.MeshPhysicalMaterial({ color: 0x0e0c0b, metalness: 0.85, roughness: 0.38, clearcoat: 0.3, clearcoatRoughness: 0.3, envMapIntensity: 1.2 });
+  const capGrip = new THREE.MeshPhysicalMaterial({
+    color: 0x0e0c0b, metalness: 0.85, roughness: 0.42, normalMap: grip, normalScale: new THREE.Vector2(1, 1), clearcoat: 0.3, clearcoatRoughness: 0.3, envMapIntensity: 1.2,
+  });
   const rubber = new THREE.MeshStandardMaterial({ color: 0x1c1b1a, metalness: 0, roughness: 0.96 });
   const ledMat = new THREE.MeshBasicMaterial({ color: 0xb89cff, toneMapped: false });
   // Everything solid on the bottle writes 1 into the stencil buffer, so the hero headline can turn white where it crosses the bottle.
-  for (const m of [steel, capSteel, rubber, ledMat]) Object.assign(m, { stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
+  for (const m of [steel, capSteel, capGrip, rubber, ledMat]) Object.assign(m, { stencilWrite: true, stencilRef: 1, stencilFunc: THREE.AlwaysStencilFunc, stencilZPass: THREE.ReplaceStencilOp });
   const glowTex = makeGlowTexture();
   const glowMat = new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.6 });
 
@@ -59,7 +63,7 @@ export function createBottle(textureSize: number): Bottle {
 
   // the cap is its own group so it can float off in the last scene
   const cap = new THREE.Group();
-  cap.add(new THREE.Mesh(capGeo, capSteel), new THREE.Mesh(ringGeo, capSteel), new THREE.Mesh(sealGeo, rubber));
+  cap.add(new THREE.Mesh(capGeo, capGrip), new THREE.Mesh(ringGeo, capSteel), new THREE.Mesh(sealGeo, rubber));
   const strip = new THREE.Mesh(diffuserGeo, ledMat);
   const disc = new THREE.Mesh(discGeo, ledMat);
   disc.rotation.x = -Math.PI / 2;
@@ -85,8 +89,8 @@ export function createBottle(textureSize: number): Bottle {
     },
     dispose() {
       for (const g of [bodyGeo, footGeo, capGeo, ringGeo, sealGeo, diffuserGeo, discGeo]) g.dispose();
-      for (const m of [steel, capSteel, rubber, ledMat, glowMat]) m.dispose();
-      for (const t of [bump, rough, glowTex]) t.dispose();
+      for (const m of [steel, capSteel, capGrip, rubber, ledMat, glowMat]) m.dispose();
+      for (const t of [normal, rough, ao, grip, glowTex]) t.dispose();
     },
   };
 }

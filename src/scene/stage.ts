@@ -33,7 +33,7 @@ export function createStage(canvas: HTMLCanvasElement): Stage {
   rim.position.set(4, 2, -3);
   scene.add(key, rim);
 
-  const bottle = createBottle(small ? 1024 : 2048);
+  const bottle = createBottle(small ? 1024 : 2048, Math.min(8, renderer.capabilities.getMaxAnisotropy()));
   const sparkles = createSparkles(small ? 500 : 1400);
   // sparkles are positioned in the bottle's pivot space, so they must share that parent
   bottle.root.children[0].add(sparkles.points);

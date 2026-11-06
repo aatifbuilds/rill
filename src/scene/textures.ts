@@ -1,76 +1,115 @@
 import * as THREE from "three";
+import { aoAt, boxBlur, fbm, heightToNormal, ridgeHeight } from "./surface";
 
-/** Deterministic random numbers (mulberry32), so the speckle looks identical on every load. */
-function rng(seed: number): () => number {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function makeCanvas(size: number): [HTMLCanvasElement, CanvasRenderingContext2D] {
+function makeCanvas(w: number, h: number = w): [HTMLCanvasElement, CanvasRenderingContext2D] {
   const c = document.createElement("canvas");
-  c.width = size;
-  c.height = size;
+  c.width = w;
+  c.height = h;
   const ctx = c.getContext("2d");
   if (!ctx) throw new Error("2D canvas is not available");
   return [c, ctx];
 }
 
-/**
- * The bottle's surface, drawn in code: a fine speckled finish plus an embossed RILL wordmark.
- * `bump` gives the tiny relief; `rough` varies how shiny each speck is (the glints) and makes the wordmark glossier.
- * Both wrap once around the bottle (u) and run bottom to top (v).
- */
-export function makeSurfaceMaps(size: number): { bump: THREE.CanvasTexture; rough: THREE.CanvasTexture } {
-  const [bumpCanvas, bump] = makeCanvas(size);
-  const [roughCanvas, rough] = makeCanvas(size);
-  bump.fillStyle = "#808080";
-  bump.fillRect(0, 0, size, size);
-  rough.fillStyle = "#8f8f8f";
-  rough.fillRect(0, 0, size, size);
+/** A canvas holding the given pixels (RGBA bytes). */
+function canvasFromPixels(data: Uint8ClampedArray<ArrayBuffer>, w: number, h: number): HTMLCanvasElement {
+  const [c, ctx] = makeCanvas(w, h);
+  ctx.putImageData(new ImageData(data, w, h), 0, 0);
+  return c;
+}
 
-  const rand = rng(7);
-  const specks = Math.floor((size * size) / 14);
-  for (let i = 0; i < specks; i++) {
-    const x = rand() * size;
-    const y = rand() * size;
-    const s = rand() < 0.1 ? 2 : 1;
-    const h = Math.floor(70 + rand() * 120);
-    bump.fillStyle = `rgb(${h},${h},${h})`;
-    bump.fillRect(x, y, s, s);
-    const r = rand() < 0.25 ? 60 + rand() * 50 : 135 + rand() * 70; // a quarter of the specks are glossy glints
-    rough.fillStyle = `rgb(${r},${r},${r})`;
-    rough.fillRect(x, y, s, s);
+/** A data texture (not colour): sharp at a slant thanks to anisotropic filtering, smooth from afar thanks to mipmaps. */
+function dataTexture(c: HTMLCanvasElement, anisotropy: number, repeatX = true): THREE.CanvasTexture {
+  const t = new THREE.CanvasTexture(c);
+  t.anisotropy = anisotropy;
+  t.colorSpace = THREE.NoColorSpace;
+  if (repeatX) t.wrapS = THREE.RepeatWrapping; // the seam where the map wraps round the bottle must not show
+  return t;
+}
+
+export interface SurfaceMaps {
+  normal: THREE.CanvasTexture;
+  rough: THREE.CanvasTexture;
+  ao: THREE.CanvasTexture;
+}
+
+/**
+ * The bottle's body surface, made in code:
+ *  - a fine powder-coat grain (three sizes of tiny bumps), stored as a normal map so light catches each grain properly;
+ *  - the RILL wordmark, slightly raised with soft edges and a touch glossier than the coating around it;
+ *  - a roughness map that varies a little grain to grain, so the highlight sparkles softly instead of looking painted;
+ *  - an ambient-occlusion strip: darker in the creases at the foot and under the cap.
+ * Each map wraps once around the bottle (u) and runs bottom to top (v).
+ */
+export function makeSurfaceMaps(size: number, anisotropy: number): SurfaceMaps {
+  const grain = fbm(size, 7, [[size / 4, 1], [size / 2, 0.8], [size, 0.5]]);
+  const height = new Float32Array(size * size);
+  const rough = new Float32Array(size * size);
+  for (let i = 0; i < height.length; i++) {
+    height[i] = grain[i];
+    rough[i] = 0.56 + (grain[i] - 0.5) * 0.3;
   }
 
-  // embossed wordmark, reading bottom to top along the body
-  const drawWord = (ctx: CanvasRenderingContext2D, fill: string): void => {
-    ctx.save();
-    ctx.translate(size * 0.25, size * 0.42);
-    ctx.rotate(-Math.PI / 2);
-    ctx.scale(0.8, 1); // the texture is stretched around the circumference; this keeps the letters in proportion
-    ctx.fillStyle = fill;
-    ctx.font = `700 ${Math.round(size * 0.075)}px "Work Sans Variable", system-ui, sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText("RILL", 0, 0);
-    ctx.restore();
-  };
-  drawWord(bump, "#f2f2f2");
-  drawWord(rough, "#2a2a2a");
+  // The wordmark is drawn into a small canvas around where it sits, blurred so the edges are soft, then added in.
+  const cx = size * 0.25;
+  const cy = size * 0.42;
+  const rx = Math.round(size * 0.18);
+  const ry = Math.round(size * 0.22);
+  const rw = Math.round(size * 0.14);
+  const rh = Math.round(size * 0.4);
+  const [, wctx] = makeCanvas(rw, rh);
+  wctx.fillStyle = "#000";
+  wctx.fillRect(0, 0, rw, rh);
+  wctx.translate(cx - rx, cy - ry);
+  wctx.rotate(-Math.PI / 2); // reads bottom to top along the body
+  wctx.fillStyle = "#fff";
+  wctx.font = `700 ${Math.round(size * 0.075)}px "Work Sans Variable", system-ui, sans-serif`;
+  wctx.textAlign = "center";
+  wctx.textBaseline = "middle";
+  wctx.fillText("RILL", 0, 0);
+  const px = wctx.getImageData(0, 0, rw, rh).data;
+  let mask: Float32Array = new Float32Array(rw * rh);
+  for (let i = 0; i < mask.length; i++) mask[i] = px[i * 4] / 255;
+  const blur = Math.max(1, Math.round(size / 700));
+  mask = boxBlur(boxBlur(mask, rw, rh, blur), rw, rh, blur);
+  for (let y = 0; y < rh; y++) {
+    for (let x = 0; x < rw; x++) {
+      const m = mask[y * rw + x];
+      const i = (y + ry) * size + (x + rx);
+      height[i] += m * 0.9;
+      rough[i] -= m * 0.26;
+    }
+  }
 
-  const mk = (c: HTMLCanvasElement): THREE.CanvasTexture => {
-    const t = new THREE.CanvasTexture(c);
-    t.anisotropy = 8;
-    t.colorSpace = THREE.NoColorSpace; // data, not colour
-    return t;
+  const normal = canvasFromPixels(heightToNormal(height, size, size, 1.3), size, size);
+
+  const roughPx = new Uint8ClampedArray(new ArrayBuffer(size * size * 4));
+  for (let i = 0; i < rough.length; i++) {
+    const v = Math.max(0, Math.min(1, rough[i])) * 255;
+    roughPx.set([v, v, v, 255], i * 4);
+  }
+
+  // Ambient occlusion: one narrow column is enough because it only varies with height.
+  const aoH = 512;
+  const aoPx = new Uint8ClampedArray(new ArrayBuffer(8 * aoH * 4));
+  for (let y = 0; y < aoH; y++) {
+    const v = 1 - (y + 0.5) / aoH;
+    const a = aoAt(v) * 255;
+    for (let x = 0; x < 8; x++) aoPx.set([a, a, a, 255], (y * 8 + x) * 4);
+  }
+
+  return {
+    normal: dataTexture(normal, anisotropy),
+    rough: dataTexture(canvasFromPixels(roughPx, size, size), anisotropy),
+    ao: dataTexture(canvasFromPixels(aoPx, 8, aoH), anisotropy),
   };
-  return { bump: mk(bumpCanvas), rough: mk(roughCanvas) };
+}
+
+/** Fine vertical grip ridges for the cap's wall, as a normal map. The rounded top edge and the cap's top stay smooth. */
+export function makeGripMap(anisotropy: number): THREE.CanvasTexture {
+  const w = 1024;
+  const h = 256;
+  const ridges = ridgeHeight(w, h, 72, 0.07, 0.9, 0.04);
+  return dataTexture(canvasFromPixels(heightToNormal(ridges, w, h, 4), w, h), anisotropy);
 }
 
 /** A soft round glow (used for the cap's LED halo). */
